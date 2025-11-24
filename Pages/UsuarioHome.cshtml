@@ -1,0 +1,49 @@
+@page
+@model UsuarioHomeModel
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="user-home-page container">
+    <div class="hero-wrap">
+        <h1 class="home-title">Hello, @User.Identity?.Name</h1>
+        <p class="home-sub">Please confirm your availability for the day or week.</p>
+    </div>
+
+    <!-- fila de acciones (SOLO 2 botones) -->
+<div class="actions-wrap">
+    <!-- ÚNICO botón Available -->
+    <a class="action-btn available" asp-page="/Available">
+        <span class="btn-icon bi bi-check2-circle"></span>
+        <span class="btn-text">Available</span>
+    </a>
+
+    <!-- Unavailable ahora NAVEGA a otra página -->
+    <a class="action-btn unavailable" asp-page="/UnavailableOptions">
+        <span class="btn-icon bi bi-x-circle"></span>
+        <span class="btn-text">Unavailable</span>
+    </a>
+</div>
+
+
+@section Scripts {
+<script>
+  (function () {
+    const btn = document.getElementById('btn-unavailable');
+    const panel = document.getElementById('unavail-panel');
+    if (!btn || !panel) return;
+
+    // Oculto por defecto (por si el CSS se tarda en cargar)
+    panel.classList.remove('show');
+
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      panel.classList.toggle('show');
+      if (panel.classList.contains('show')) {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+  })();
+</script>
+}

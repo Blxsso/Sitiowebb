@@ -1,0 +1,21 @@
+@* Muestra un toast si hay algo en TempData *@
+@{
+    var ok = TempData["flash.success"] as string;
+    var err = TempData["flash.error"] as string;
+}
+@if (!string.IsNullOrWhiteSpace(ok))
+{
+    <div id="app-toast" class="toast toast--success" role="status" aria-live="polite">
+        <div class="toast__icon">✔</div>
+        <div class="toast__body">@ok</div>
+        <button class="toast__close" type="button" aria-label="Close">×</button>
+    </div>
+}
+@if (!string.IsNullOrWhiteSpace(err))
+{
+    <div id="app-toast" class="toast toast--error" role="status" aria-live="polite">
+        <div class="toast__icon">!</div>
+        <div class="toast__body">@err</div>
+        <button class="toast__close" type="button" aria-label="Close">×</button>
+    </div>
+}

@@ -1,0 +1,84 @@
+@page
+@model Sitiowebb.Pages.UnavailableOptionsModel
+@{
+    ViewData["Title"] = "Unavailable options";
+}
+
+<!-- Estilos SOLO para esta página (si prefieres, véase la opción 2 para moverlos a site.css) -->
+<style>
+  .tiles{display:flex;flex-wrap:wrap;gap:28px}
+
+  .tile{
+    position:relative; display:inline-flex; align-items:center; justify-content:center;
+    height:96px; min-width:220px; padding:0 28px; border-radius:16px; overflow:hidden;
+    text-decoration:none !important; box-shadow:0 14px 30px rgba(0,0,0,.08);
+    transition:transform .15s ease; color:#111827;
+  }
+  .tile:focus-visible{outline:3px solid #1d4ed8; outline-offset:3px}
+  .tile:hover{transform:translateY(-1px)}
+
+  .tile__icon{width:56px; height:56px; transition:opacity .2s ease, transform .2s ease}
+  .tile__label{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-weight:700; letter-spacing:.3px; opacity:0; transform:translateY(6px);
+    transition:opacity .18s ease, transform .18s ease;
+    color:inherit;
+  }
+
+  /* Efecto hover/focus: se “apaga” el icono y aparece el texto */
+  .tile:hover .tile__icon,
+  .tile:focus-visible .tile__icon{opacity:.25}
+  .tile:hover .tile__label,
+  .tile:focus-visible .tile__label{opacity:1; transform:translateY(0)}
+
+  /* Colores que ya usabas */
+  .tile--yellow{background:#f3cf6a}
+  .tile--orange{background:#f2a355}
+  .tile--lightblue{background:#8fbaf7}
+  .tile--blue{background:#3f5bf2; color:#fff}
+  .tile--gray{background:#d9dde2}
+  .tile--purple{background:#9e7df6; color:#fff}
+</style>
+
+<div class="container-xxl py-4">
+  <h1 class="display-4 home-title">What kind of unavailability?</h1>
+  <p class="home-sub">Choose one option below.</p>
+
+  <div class="tiles">
+    <!-- Vacations (amarillo) -->
+    <a class="tile tile--yellow" asp-page="/Unavailable/New" asp-route-kind="vacation" title="Vacations">
+      <img class="tile__icon" src="~/Images/holiday.png" alt="Vacations">
+      <span class="tile__label">Vacations</span>
+    </a>
+
+    <!-- Holidays (naranja) -->
+    <a class="tile tile--orange" asp-page="/Unavailable/New" asp-route-kind="holiday" title="Holidays">
+      <img class="tile__icon" src="~/Images/haze.png" alt="Holidays">
+      <span class="tile__label">Holidays</span>
+    </a>
+
+    <!-- Meeting (azul claro) -> confirmación rápida -->
+    <a class="tile tile--lightblue" asp-page="/Unavailable/QuickConfirm" asp-route-kind="meeting" title="Meeting">
+      <img class="tile__icon" src="~/Images/headset.png" alt="Meeting">
+      <span class="tile__label">Meeting</span>
+    </a>
+
+    <!-- Job trip (azul) -> confirmación rápida -->
+    <a class="tile tile--blue" asp-page="/Unavailable/QuickConfirm" asp-route-kind="trip" title="Job trip">
+      <img class="tile__icon" src="~/Images/plane.png" alt="Job trip">
+      <span class="tile__label">Job trip</span>
+    </a>
+
+    <!-- Half day off (gris) -> formulario opcional -->
+    <a class="tile tile--gray" asp-page="/Unavailable/New" asp-route-kind="halfday" title="Half day off">
+      <img class="tile__icon" src="~/Images/user-round-minus.png" alt="Half day off">
+      <span class="tile__label">Half day off</span>
+    </a>
+
+    <!-- Ill / Sick (morado) -> formulario con justificación -->
+    <a class="tile tile--purple" asp-page="/Unavailable/New" asp-route-kind="sick" title="Ill">
+      <img class="tile__icon" src="~/Images/bed.png" alt="Ill">
+      <span class="tile__label">Ill</span>
+    </a>
+  </div>
+</div>

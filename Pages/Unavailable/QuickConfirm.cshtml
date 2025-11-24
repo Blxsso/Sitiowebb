@@ -1,0 +1,15 @@
+@page
+@model Sitiowebb.Pages.Unavailable.QuickConfirmModel
+@{
+    ViewData["Title"] = "Confirm unavailability";
+}
+
+<div class="container-xxl py-4">
+  <h2 class="home-title mb-3">@Model.Title</h2>
+
+  <form method="post">
+    <input type="hidden" name="kind" value="@Model.Kind" />
+    <button class="btn btn-primary me-2" asp-page-handler="Yes">Yes, confirm</button>
+    <a class="btn btn-outline-secondary" asp-page="/UnavailableOptions">No, cancel</a>
+  </form>
+</div>

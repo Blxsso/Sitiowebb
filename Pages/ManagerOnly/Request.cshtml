@@ -1,0 +1,59 @@
+@page "{id:int}"
+@model Sitiowebb.Pages.ManagerOnly.RequestModel
+@{
+    ViewData["Title"] = "Vacation / Unavailability request";
+    var item = Model.Item;
+}
+
+<div class="container py-3">
+    <h2 class="mb-3">Request details</h2>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Employee</dt>
+                <dd class="col-sm-9">@item.UserEmail</dd>
+
+                <dt class="col-sm-3">Type</dt>
+                <dd class="col-sm-9">@item.Kind</dd>
+
+                <dt class="col-sm-3">From</dt>
+                <dd class="col-sm-9">@item.From.ToString("MM/dd/yyyy")</dd>
+
+                <dt class="col-sm-3">To</dt>
+                <dd class="col-sm-9">@item.To.ToString("MM/dd/yyyy")</dd>
+
+                <dt class="col-sm-3">Created</dt>
+                <dd class="col-sm-9">@item.CreatedUtc.ToLocalTime()</dd>
+
+                <dt class="col-sm-3">Employee comment</dt>
+                <dd class="col-sm-9">
+                    @if (string.IsNullOrWhiteSpace(item.UserComment))
+                    {
+                        <span class="text-muted">No comment provided.</span>
+                    }
+                    else
+                    {
+                        @item.UserComment
+                    }
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    <form method="post" asp-page-handler="Approve" asp-route-id="@item.Id" class="mb-3">
+        <div class="mb-2">
+            <label class="form-label">Manager comment (optional)</label>
+            <textarea name="comment" class="form-control" rows="3"></textarea>
+        </div>
+        <button class="btn btn-success me-2">Approve</button>
+    </form>
+
+    <form method="post" asp-page-handler="Deny" asp-route-id="@item.Id">
+        <div class="mb-2">
+            <label class="form-label">Manager comment (optional)</label>
+            <textarea name="comment" class="form-control" rows="3"></textarea>
+        </div>
+        <button class="btn btn-danger">Deny</button>
+    </form>
+</div>

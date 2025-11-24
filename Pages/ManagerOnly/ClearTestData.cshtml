@@ -1,0 +1,19 @@
+@page
+@model Sitiowebb.Pages.ManagerOnly.ClearTestDataModel
+@{
+    ViewData["Title"] = "Clear test data";
+}
+
+<section class="container py-4">
+    <h1 class="h4 mb-3">Clear test data</h1>
+
+    <p class="text-danger">
+        This will delete ALL vacation requests and unavailabilities from the database.
+    </p>
+
+    <form method="post">
+        <button class="btn btn-danger" type="submit">
+            Delete all VacationRequests + Unavailabilities
+        </button>
+    </form>
+</section>

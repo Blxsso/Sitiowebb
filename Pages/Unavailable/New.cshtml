@@ -1,0 +1,43 @@
+@page
+@model Sitiowebb.Pages.Unavailable.NewModel
+@{
+    ViewData["Title"] = "Report unavailability";
+}
+
+<div class="container-xxl py-4">
+    <h2 class="home-title mb-1">@Model.KindTitle</h2>
+    <p class="home-sub">Fill the details and send.</p>
+
+    <form method="post" class="row gy-3">
+
+        <input type="hidden" asp-for="Input.Kind" />
+
+        <div class="col-md-6">
+            <label asp-for="Input.StartDate" class="form-label fw-semibold">Start Date</label>
+            <input asp-for="Input.StartDate" type="date" class="form-control" />
+            <span asp-validation-for="Input.StartDate" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="Input.EndDate" class="form-label fw-semibold">End Date</label>
+            <input asp-for="Input.EndDate" type="date" class="form-control" />
+            <div class="form-text">Leave empty if it's just one day.</div>
+            <span asp-validation-for="Input.EndDate" class="text-danger"></span>
+        </div>
+
+        <div class="col-12">
+            <label asp-for="Input.Comment" class="form-label fw-semibold">Justification (optional)</label>
+            <textarea asp-for="Input.Comment" class="form-control" rows="5" maxlength="500"></textarea>
+            <span asp-validation-for="Input.Comment" class="text-danger"></span>
+        </div>
+
+        <div class="col-12 d-flex gap-2 mt-2">
+            <button type="submit" class="btn btn-success">Submit</button>
+            <a asp-page="/UnavailableOptions" class="btn btn-light border btn-fix-text">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,26 @@
+@* Pages/Shared/_Flash.cshtml *@
+@{
+    // Mensajes que puedes cargar con TempData["Flash"] o TempData["FlashError"]
+    var ok   = TempData["Flash"] as string;
+    var fail = TempData["FlashError"] as string;
+}
+
+@if (!string.IsNullOrWhiteSpace(ok))
+{
+    <div class="container-xxl mt-3">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @ok
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(fail))
+{
+    <div class="container-xxl mt-3">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @fail
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+}

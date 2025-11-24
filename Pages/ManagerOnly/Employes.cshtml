@@ -1,0 +1,157 @@
+@page
+@model Sitiowebb.Pages.ManagerOnly.EmployesModel
+@{
+    ViewData["Title"] = "Employees Availability";
+}
+
+@functions {
+    string CountryName(string code)
+    {
+        code = (code ?? "").Trim().ToUpperInvariant();
+        return code switch
+        {
+            ""    => "Global (.com)",
+            "US"  => "United States",
+            "CR"  => "Costa Rica",
+            "MX"  => "Mexico",
+            "ES"  => "Spain",
+            "AU"  => "Australia",
+            _     => code
+        };
+    }
+}
+
+<div class="container py-3">
+    <h2 class="mb-4 fw-semibold">Employees Availability</h2>
+
+    <form method="get" class="d-flex align-items-center gap-2 mb-3">
+        <input name="q"
+               value="@Model.q"
+               class="form-control"
+               style="min-width:280px"
+               placeholder="Search employee by email or name" />
+        <button class="btn btn-success">Search</button>
+    </form>
+
+    @{
+        var groups = Model.Employes
+            .GroupBy(e => e.CountryCode ?? "")
+            .OrderBy(g => string.IsNullOrWhiteSpace(g.Key) ? 0 : 1)
+            .ThenBy(g => g.Key);
+    }
+
+    @foreach (var group in groups)
+    {
+        var notAvailable = group
+            .Where(e => !string.Equals(e.Status, "available", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        var available = group
+            .Where(e => string.Equals(e.Status, "available", StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(e.Status))
+            .ToList();
+
+        <h4 class="mt-4 mb-2 text-uppercase">@CountryName(group.Key)</h4>
+
+        @* -------- Bloque: Not available today -------- *@
+        @if (notAvailable.Any())
+        {
+            <h5 class="mt-3 mb-2">Not available today</h5>
+
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Email</th>
+                        <th>Name</th>
+                        <th>Status</th>
+                        <th>From</th>
+                        <th>To</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var e in notAvailable)
+                {
+                    var baseStatus = e.Status ?? "available";
+                    var color = baseStatus switch
+                    {
+                        "vacation"       => "text-warning",
+                        "sick"           => "text-danger",
+                        "trip"           => "text-primary",
+                        "training"       => "text-success",
+                        "meeting"        => "text-info",
+                        "halfday"        => "text-secondary",
+                        "personal"       => "text-muted",
+                        "overtime"       => "text-muted",
+                        "unavailability" => "text-muted",
+                        _                => "text-dark"
+                    };
+
+                    <tr>
+                        <td>@e.Email</td>
+                        <td>@e.Name</td>
+                        <td class="@color fw-semibold">
+                            @baseStatus
+                            @if (!string.IsNullOrWhiteSpace(e.Half))
+                            {
+                                <text> (@e.Half)</text>
+                            }
+                        </td>
+                        <td>@(e.From?.ToString("dd/MM/yyyy") ?? "-")</td>
+                        <td>@(e.To?.ToString("dd/MM/yyyy") ?? "-")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+
+        @* -------- Bloque: Available -------- *@
+        @if (available.Any())
+        {
+            <h5 class="mt-4 mb-2">Available</h5>
+
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Email</th>
+                        <th>Name</th>
+                        <th>Status</th>
+                        <th>From</th>
+                        <th>To</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var e in available)
+                {
+                    var baseStatus = e.Status ?? "available";
+                    var color = baseStatus switch
+                    {
+                        "vacation"       => "text-warning",
+                        "sick"           => "text-danger",
+                        "trip"           => "text-primary",
+                        "training"       => "text-success",
+                        "meeting"        => "text-info",
+                        "halfday"        => "text-secondary",
+                        "personal"       => "text-muted",
+                        "overtime"       => "text-muted",
+                        "unavailability" => "text-muted",
+                        _                => "text-dark"
+                    };
+
+                    <tr>
+                        <td>@e.Email</td>
+                        <td>@e.Name</td>
+                        <td class="@color fw-semibold">
+                            @baseStatus
+                            @if (!string.IsNullOrWhiteSpace(e.Half))
+                            {
+                                <text> (@e.Half)</text>
+                            }
+                        </td>
+                        <td>@(e.From?.ToString("dd/MM/yyyy") ?? "-")</td>
+                        <td>@(e.To?.ToString("dd/MM/yyyy") ?? "-")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    }
+</div>

@@ -1,0 +1,170 @@
+@page
+@model Sitiowebb.Areas.Identity.Pages.Account.RegisterModel
+@{
+    ViewData["Title"] = "Registro";
+    Layout = "/Pages/Shared/_AuthLayout.cshtml";
+}
+
+<h1 class="auth-title">Welcome to the job calendary.</h1>
+<p class="auth-sub">Please register</p>
+
+<form method="post" novalidate>
+    <!-- En Razor Pages, el antiforgery se emite automáticamente; si quieres mantenerlo, no hace daño -->
+    @* @Html.AntiForgeryToken() *@
+
+    <!-- Un solo summary es suficiente -->
+    <div asp-validation-summary="All" class="alert alert-danger py-2 small"></div>
+
+    <!-- Username -->
+    <div class="mb-3">
+        <label asp-for="Input.UserName" class="form-label fw-medium"></label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-person"></i></span>
+            <input asp-for="Input.UserName" class="form-control form-control-lg" placeholder="username" required />
+        </div>
+        <span asp-validation-for="Input.UserName" class="text-danger small"></span>
+    </div>
+
+    <!-- Email -->
+    <div class="mb-3">
+        <label asp-for="Input.Email" class="form-label fw-medium"></label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+            <input asp-for="Input.Email" class="form-control form-control-lg" placeholder="name@domain.com" required />
+        </div>
+        <span asp-validation-for="Input.Email" class="text-danger small"></span>
+    </div>
+
+    <!-- Password + hints -->
+    <div class="mb-3">
+        <label asp-for="Input.Password" class="form-label fw-medium"></label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+            <input asp-for="Input.Password" class="form-control form-control-lg" id="pwd"
+                   placeholder="mínimo 12 caracteres" required />
+        </div>
+
+        <div id="pwdAlert" class="alert alert-danger d-none py-2 small mt-2" role="alert">
+            The password does not fulfill the requirements. Please check it.
+        </div>
+
+        <ul class="list-unstyled small mt-2" id="pwdHints">
+            <li data-req="len">• ≥ 12 characters</li>
+            <li data-req="lower">• lowercase</li>
+            <li data-req="upper">• uppercase</li>
+            <li data-req="digit">• Digit</li>
+            <li data-req="symbol">• Symbol</li>
+            <li data-req="unique">• ≥ 5 unique characters</li>
+        </ul>
+
+        <span asp-validation-for="Input.Password" class="text-danger small"></span>
+    </div>
+
+    <!-- Confirmación -->
+    <div class="mb-4">
+        <label asp-for="Input.ConfirmPassword" class="form-label fw-medium"></label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-shield-check"></i></span>
+            <input asp-for="Input.ConfirmPassword" class="form-control form-control-lg"
+                   placeholder="confirm password" required />
+        </div>
+        <span asp-validation-for="Input.ConfirmPassword" class="text-danger small"></span>
+    </div>
+
+    <!-- Country (ISO-2) -->
+    <div class="mb-3">
+        <label asp-for="Input.CountryCode" class="form-label"></label>
+        <select asp-for="Input.CountryCode" class="form-select" required>
+            <option value="US">USA</option>
+            <option value="ES">Spain</option>
+            <option value="MX">Mexico</option>
+            <option value="CR">Costa Rica</option>
+            <option value="AR">Argentina</option>
+            <option value="BR">Brazil</option>
+            <option value="AU">Australia</option>
+            <option value="NZ">New Zealand</option>
+        </select>
+        <span asp-validation-for="Input.CountryCode" class="text-danger small"></span>
+    </div>
+
+    <!-- Time Zone (IANA) -->
+    <div class="mb-3">
+        <label asp-for="Input.TimeZoneId" class="form-label"></label>
+        <input asp-for="Input.TimeZoneId" class="form-control"
+               list="tz-common"
+               placeholder="America/New_York, Europe/Madrid, America/Costa_Rica, Australia/Sydney"
+               required />
+        <datalist id="tz-common">
+            <option value="Etc/UTC" />
+            <option value="America/New_York" />
+            <option value="America/Chicago" />
+            <option value="America/Denver" />
+            <option value="America/Los_Angeles" />
+            <option value="Europe/Madrid" />
+            <option value="Europe/London" />
+            <option value="America/Mexico_City" />
+            <option value="America/Costa_Rica" />
+            <option value="America/Bogota" />
+            <option value="America/Lima" />
+            <option value="America/Sao_Paulo" />
+            <option value="America/Argentina/Buenos_Aires" />
+            <option value="Australia/Sydney" />
+            <option value="Pacific/Auckland" />
+        </datalist>
+        <span asp-validation-for="Input.TimeZoneId" class="text-danger small"></span>
+    </div>
+
+    <button type="submit" class="btn btn-green btn-lg w-100">Sign up</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+      (function(){
+        const form = document.querySelector('form[method="post"]');
+        const pwd  = document.getElementById('pwd');
+        const ul   = document.getElementById('pwdHints');
+        const alertBox = document.getElementById('pwdAlert');
+        if(!form || !pwd || !ul || !alertBox) return;
+
+        const li = key => ul.querySelector(`[data-req="${key}"]`);
+        const set = (el, ok) => {
+          el.classList.toggle('text-success', ok);
+          el.classList.toggle('text-danger', !ok);
+        };
+        const uniqueCount = s => new Set((s||"").split('')).size;
+
+        function testsFor(v){
+          return {
+            len:    (v||"").length >= 12,
+            lower:  /[a-z]/.test(v||""),
+            upper:  /[A-Z]/.test(v||""),
+            digit:  /\d/.test(v||""),
+            symbol: /[^A-Za-z0-9]/.test(v||""),
+            unique: uniqueCount(v) >= 5
+          };
+        }
+
+        function paint(v){
+          const tests = testsFor(v);
+          Object.entries(tests).forEach(([k, ok]) => set(li(k), ok));
+          return Object.values(tests).every(Boolean);
+        }
+
+        pwd.addEventListener('input', () => {
+          const ok = paint(pwd.value || "");
+          alertBox.classList.toggle('d-none', ok);
+        });
+        paint(pwd.value || "");
+
+        form.addEventListener('submit', (e) => {
+          const ok = paint(pwd.value || "");
+          if(!ok){
+            e.preventDefault();
+            alertBox.classList.remove('d-none');
+            pwd.focus();
+          }
+        });
+      })();
+    </script>
+}

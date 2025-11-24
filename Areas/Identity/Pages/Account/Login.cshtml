@@ -1,0 +1,56 @@
+@page
+@model Sitiowebb.Areas.Identity.Pages.Account.LoginModel
+@{
+    ViewData["Title"] = "Login";
+    Layout = "/Pages/Shared/_AuthLayout.cshtml";
+}
+
+<h1 class="auth-title">Welcome back.</h1>
+<p class="auth-sub">Please sign in</p>
+
+<form method="post" novalidate>
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="All" class="alert alert-danger py-2 small"></div>
+
+    <!-- Email -->
+    <div class="mb-3">
+        <label asp-for="Input.Email" class="form-label fw-medium"></label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+            <input asp-for="Input.Email" class="form-control form-control-lg" placeholder="gmail" />
+        </div>
+        <span asp-validation-for="Input.Email" class="text-danger small"></span>
+    </div>
+
+    <!-- Password -->
+    <div class="mb-4">
+        <label asp-for="Input.Password" class="form-label fw-medium"></label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+            <input asp-for="Input.Password" class="form-control form-control-lg" placeholder="password" />
+        </div>
+        <span asp-validation-for="Input.Password" class="text-danger small"></span>
+    </div>
+
+    <!-- Remember -->
+    <div class="form-check mt-2">
+        <input asp-for="Input.RememberMe" class="form-check-input" />
+        <label asp-for="Input.RememberMe" class="form-check-label">Remember me</label>
+    </div>
+
+    <button type="submit" class="btn btn-green btn-lg w-100 mt-3">sign in</button>
+</form>
+
+<div class="text-center mt-3">
+    Don't have an account?
+<a href="@Url.Page("/Account/Register", new { area = "Identity", ReturnUrl = Model.ReturnUrl ?? "/" })"
+   class="text-primary fw-semibold">
+    Please register
+</a>
+
+</div>
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+}

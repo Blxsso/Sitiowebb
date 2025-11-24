@@ -1,0 +1,20 @@
+@page
+@model Sitiowebb.Pages.TestEmailModel
+@{
+    ViewData["Title"] = "Test Email";
+}
+
+<h2 class="mb-3">Test de envío de correo</h2>
+
+<form method="post">
+    <button type="submit" class="btn btn-success">
+        Enviar correo de prueba
+    </button>
+</form>
+
+@if (!string.IsNullOrWhiteSpace(Model.Result))
+{
+    <div class="alert alert-success mt-3">
+        @Model.Result
+    </div>
+}

@@ -1,0 +1,303 @@
+@page
+@model Sitiowebb.Pages.ManagerOnly.CalendarModel
+@{
+    ViewData["Title"] = "General calendar";
+}
+
+<div class="container-xxl py-3">
+
+    <!-- Barra superior: título + navegación + búsqueda -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+        <div class="d-flex align-items-center gap-2">
+           <a class="btn btn-outline-secondary btn-fix-text"
+                asp-page="./Calendar"
+                asp-route-month="@(Model.MonthNum == 1 ? 12 : Model.MonthNum - 1)"
+                asp-route-year="@(Model.MonthNum == 1 ? Model.YearNum - 1 : Model.YearNum)">
+                &laquo; Prev
+            </a>
+
+            <h2 class="m-0 ms-2 fw-semibold">@Model.MonthName @Model.YearNum</h2>
+
+            <a class="btn btn-outline-secondary ms-2 btn-fix-text"
+               asp-page="./Calendar"
+               asp-route-month="@(Model.MonthNum == 12 ? 1 : Model.MonthNum + 1)"
+               asp-route-year="@(Model.MonthNum == 12 ? Model.YearNum + 1 : Model.YearNum)">
+                Next &raquo;
+            </a>
+        </div>
+
+        <!-- SOLO ESTE FORM GET -->
+        <form method="get" class="d-flex align-items-center gap-2 flex-wrap">
+            <input type="hidden" name="month" value="@Model.MonthNum" />
+            <input type="hidden" name="year"  value="@Model.YearNum" />
+
+            <input name="q" value="@Model.q" class="form-control" style="min-width:240px"
+                   placeholder="Search user (email or name)..." />
+
+            <!-- Filtro por país -->
+            <select name="region" class="form-select" style="min-width:130px">
+                <option value="">All countries</option>
+                <option value="US" selected="@(Model.region=="US")">USA</option>
+                <option value="ES" selected="@(Model.region=="ES")">Spain</option>
+                <option value="MX" selected="@(Model.region=="MX")">Mexico</option>
+                <option value="CR" selected="@(Model.region=="CR")">Costa Rica</option>
+                <option value="AR" selected="@(Model.region=="AR")">Argentina</option>
+                <option value="BR" selected="@(Model.region=="BR")">Brazil</option>
+                <option value="AU" selected="@(Model.region=="AU")">Australia</option>
+                <option value="CA" selected="@(Model.region=="CA")">Canada</option>
+            </select>
+
+            <!-- Filtro por grupo regional -->
+            <select name="regionGroup" class="form-select" style="min-width:170px">
+                <option value="">All regions</option>
+                <option value="NAM" selected="@(Model.regionGroup=="NAM")">North America</option>
+                <option value="CAM" selected="@(Model.regionGroup=="CAM")">Central America</option>
+                <option value="SAM" selected="@(Model.regionGroup=="SAM")">South America</option>
+                <option value="EU"  selected="@(Model.regionGroup=="EU")">Europe</option>
+                <option value="APAC" selected="@(Model.regionGroup=="APAC")">Asia-Pacific</option>
+                <option value="OCE" selected="@(Model.regionGroup=="OCE")">Oceania</option>
+            </select>
+
+            <button class="btn btn-success">Go</button>
+        </form>
+    </div>
+
+    <!-- Leyenda -->
+    <div class="legend">
+        <span class="legend-item"><i class="legend-dot legend-vac"></i> Vacation</span>
+        <span class="legend-item"><i class="legend-dot legend-meet"></i> Meeting</span>
+        <span class="legend-item"><i class="legend-dot legend-trip"></i> Job trip</span>
+        <span class="legend-item"><i class="legend-dot legend-half"></i> Half day</span>
+        <span class="legend-item"><i class="legend-dot legend-ill"></i> Sick</span>
+        <span class="legend-item"><i class="legend-dot legend-hol"></i> Holiday</span>
+    </div>
+
+    <!-- Cabecera días -->
+    <div class="cal grid-7 cal-head mb-2">
+        <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+    </div>
+
+    <!-- Celdas del calendario -->
+    <div class="cal grid-7">
+        @foreach (var day in Model.Days)
+        {
+            var outMonth   = day.Date.Month != Model.MonthNum;
+            var isToday    = day.Date.Date == DateTime.UtcNow.Date;
+            var dateKey    = day.Date.ToString("yyyyMMdd");          // p.ej. 20251224
+            var dateHuman  = day.Date.ToString("dddd dd MMMM yyyy"); // título del modal
+            var totalEv    = day.Events?.Count ?? 0;
+            var extraCount = totalEv > 3 ? totalEv - 3 : 0;
+
+            <div class="cal-cell @(outMonth ? "out" : "") @(isToday ? "today" : "")">
+                <div class="cal-num">@day.Date.Day</div>
+
+                @* Chips visibles (máx 3) *@
+                @if (day.Events?.Count > 0)
+                {
+                    foreach (var ev in day.Events.Take(3))
+                    {
+                        <div class="emp-pill @KindClass(ev?.Kind)">
+                            <img class="pill-ico" src="@ev.Icon" alt="" />
+                            <span>@ev.User</span>
+                        </div>
+                    }
+                }
+
+                @* Botón '+22 more' para abrir modal con TODOS *@
+                @if (extraCount > 0)
+                {
+                    <button type="button"
+                            class="more-btn btn btn-sm w-100 mt-1"
+                            data-bs-toggle="modal"
+                            data-bs-target="#dayModal"
+                            data-dayid="day-@dateKey"
+                            data-title="@dateHuman">
+                        +@extraCount more
+                    </button>
+                }
+
+                @* Contenido completo OCULTO para este día, lo leerá el modal *@
+                <div id="day-@dateKey" class="d-none">
+                    <h6 class="mb-3">@dateHuman</h6>
+                    <ul class="list-unstyled mb-0">
+                        @if (totalEv == 0)
+                        {
+                            <li class="text-muted">No unavailabilities for this day.</li>
+                        }
+                        else
+                        {
+                            foreach (var ev in day.Events.OrderBy(e => e.User))
+                            {
+                                <li class="d-flex align-items-center mb-1">
+                                    <span class="emp-pill @KindClass(ev.Kind) me-2">
+                                        <img class="pill-ico" src="@ev.Icon" alt="" />
+                                        <span>@ev.User</span>
+                                    </span>
+                                    <small class="text-muted">@ev.Kind</small>
+                                </li>
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Tabla de empleados (hoy) -->
+ <!-- Tabla de empleados (hoy) -->
+<div class="mt-5">
+    <h3>Employees availability (today)</h3>
+
+    @functions {
+        string StatusColor(string status) => (status ?? "").ToLowerInvariant() switch
+        {
+            "vacation" => "text-warning",
+            "sick"     => "text-danger",
+            "trip"     => "text-primary",
+            "training" => "text-success",
+            "meeting"  => "text-info",
+            "halfday"  => "text-secondary",
+            "personal" => "text-muted",
+            "overtime" => "text-muted",
+            _          => "text-dark"
+        };
+    }
+
+    @{
+        var notAvailable = Model.Employes
+            .Where(e => !string.Equals(e.Status, "available", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        var available = Model.Employes
+            .Where(e => string.Equals(e.Status, "available", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    <!-- BLOQUE 1: NO DISPONIBLES HOY -->
+        <h4 class="mt-3 mb-2">Not available today</h4>
+
+        @if (!notAvailable.Any())
+        {
+            <p class="text-muted">Everyone is available today.</p>
+        }
+        else
+        {
+            <table class="table table-striped align-middle mt-3">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>From</th>
+                        <th>To</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var e in notAvailable)
+                {
+                    var color = StatusColor(e.Status);
+                    <tr>
+                        <td>@e.Name</td>
+                        <td>@e.Email</td>
+                        <td class="@color fw-semibold">
+                            @e.Status
+                            @if (!string.IsNullOrWhiteSpace(e.Half))
+                            {
+                                <text> (@e.Half)</text>
+                            }
+                        </td>
+                        <td>@(e.From?.ToString("dd/MM/yyyy") ?? "-")</td>
+                        <td>@(e.To?.ToString("dd/MM/yyyy") ?? "-")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+
+        <!-- BLOQUE 2: DISPONIBLES HOY -->
+        <h4 class="mt-4 mb-2">Available today</h4>
+
+        @if (!available.Any())
+        {
+            <p class="text-muted">No employees available today.</p>
+        }
+        else
+        {
+            <table class="table table-striped align-middle mt-3">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var e in available)
+                {
+                    <tr>
+                        <td>@e.Name</td>
+                        <td>@e.Email</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@functions {
+    // Devuelve la clase de color para el chip según el tipo
+    public static string KindClass(string? kind)
+        => (kind ?? "").Trim().ToLowerInvariant() switch
+        {
+            "vacation" or "vacations" or "holiday" or "holidays" => "k-vac",   // amarillo
+            "holiday-fixed"                                      => "k-hol",   // naranja (festivos fijos)
+            "sick" or "ill" or "sickness"                        => "k-sick",  // lila
+            "trip" or "jobtrip" or "job trip"                    => "k-trip",  // azul fuerte
+            "meeting" or "meet"                                  => "k-meet",  // celeste
+            "halfday" or "half-day"                              => "k-half",  // gris
+            _                                                    => "k-default"
+        };
+}
+
+<!-- Modal reutilizable para '+XX more' -->
+<div class="modal fade" id="dayModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Day details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="dayModalBody"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/manager-calendar.js" asp-append-version="true"></script>
+
+    <script>
+        // Lógica del modal para '+XX more'
+        document.addEventListener('DOMContentLoaded', function () {
+            var dayModal = document.getElementById('dayModal');
+            if (!dayModal) return;
+
+            dayModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                if (!button) return;
+
+                var dayId = button.getAttribute('data-dayid');
+                var title = button.getAttribute('data-title') || 'Day details';
+                var src   = document.getElementById(dayId);
+
+                var modalTitle = dayModal.querySelector('.modal-title');
+                var modalBody  = document.getElementById('dayModalBody');
+
+                if (modalTitle) modalTitle.textContent = title;
+                if (modalBody && src) modalBody.innerHTML = src.innerHTML;
+            });
+        });
+    </script>
+}

@@ -1,0 +1,203 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Sitiowebb.Models
+@using Sitiowebb.Data
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject ApplicationDbContext Db
+
+@{
+    var isManager = User?.Identity?.IsAuthenticated == true && User.IsInRole("Manager");
+    var pendingCount = 0;
+
+    if (isManager)
+    {
+        pendingCount = Db.VacationRequests.Count(v => v.Status == 0);
+    }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="~/images/favicon-32x32.ico" />
+    <link rel="shortcut icon" href="~/images/favicon-32x32.ico" />
+    <title>@ViewData["Title"] - Arkose Labs</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <!-- Flash de arriba -->
+    <partial name="_Flash" />
+
+    <!-- NAVBAR PRINCIPAL -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark app-navbar mb-3">
+            <div class="container-xxl">
+                <!-- Logo (sin texto “Sitiowebb”) -->
+                <a class="navbar-brand d-flex align-items-center" asp-page="/Index">
+                    <img src="~/Images/ArkoseLabs_Horizontal_reverse.png"
+                         class="brand-logo" style="height:40px;" alt="Arkose Labs" />
+                </a>
+
+                <!-- Hamburguesa de colapso normal Bootstrap (móvil) -->
+                <button class="navbar-toggler" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#mainNavbar"
+                        aria-controls="mainNavbar"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="mainNavbar">
+                    <!-- Links izquierda -->
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Index">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Privacy">Privacy</a>
+                        </li>
+                    </ul>
+
+                    <!-- Zona derecha (login + manager) -->
+                    <div class="d-flex align-items-center gap-3">
+                        @await Html.PartialAsync("_LoginPartial")
+
+                        @if (isManager)
+                        {
+                            <!-- Botón hamburguesa verde (panel Manager) -->
+                            <button class="hamburger"
+                                    type="button"
+                                    data-bs-toggle="offcanvas"
+                                    data-bs-target="#managerMenu"
+                                    aria-controls="managerMenu"
+                                    aria-label="Open manager menu">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+
+                                <!-- Puntito rojo si hay pendientes -->
+                                <i class="notif-dot @(pendingCount > 0 ? "show" : "")"></i>
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        @* Panel lateral Manager *@
+        @if (isManager)
+        {
+            <div class="offcanvas offcanvas-end offcanvas-manager"
+                 tabindex="-1"
+                 id="managerMenu"
+                 aria-labelledby="managerMenuLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="managerMenuLabel">Manager</h5>
+                    <button type="button" class="btn-close btn-close-white"
+                            data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+
+                <div class="offcanvas-body">
+                    <nav class="manager-links mb-3">
+                        <a class="manager-link" asp-page="/ManagerOnly/Calendar">
+                            General calendar
+                        </a>
+
+                        <a class="manager-link d-flex align-items-center gap-2"
+                           asp-page="/ManagerOnly/Requests">
+                            <span>Pending requests</span>
+                            <span id="pending-badge"
+                                  class="pending-badge @(pendingCount > 0 ? "" : "d-none")">
+                                @pendingCount
+                            </span>
+                        </a>
+
+                        <a class="manager-link" asp-page="/ManagerOnly/Employes">
+                            Show employes
+                        </a>
+                    </nav>
+
+                    <hr class="my-3" />
+
+                    <form class="d-grid"
+                          asp-area="Identity"
+                          asp-page="/Account/Logout"
+                          asp-route-returnUrl="@Url.Page("/Index")"
+                          method="post">
+                        <button type="submit" class="btn btn-outline-light">
+                            Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
+    </header>
+
+    <!-- CONTENIDO -->
+    <main role="main" class="pb-4">
+        <div class="container-xxl">
+            @RenderBody()
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-top text-muted py-3">
+        <div class="container-xxl">
+            &copy; @DateTime.UtcNow.Year - Arkose Labs -
+            <a asp-page="/Privacy">Privacy</a>
+        </div>
+    </footer>
+
+    <!-- SCRIPTS BASE -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- SignalR (local + fallback CDN) -->
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+    <script>
+        (function ensureSignalR() {
+            if (!window.signalR || !window.signalR.HubConnectionBuilder) {
+                var s = document.createElement('script');
+                s.src = 'https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js';
+                s.onload = function () { console.log('[notif] SignalR CDN loaded'); };
+                document.head.appendChild(s);
+            }
+        })();
+    </script>
+
+    <!-- Notificaciones en tiempo real -->
+    <script src="~/js/notifications.js" asp-append-version="true"></script>
+
+    <!-- Toast de TempData -->
+    @if (TempData["SuccessMessage"] is string flash && !string.IsNullOrWhiteSpace(flash))
+    {
+        <div id="flash-toast"
+             class="toast align-items-center position-fixed top-0 end-0 m-3"
+             role="alert" aria-live="assertive" aria-atomic="true"
+             style="z-index:1080; min-width:320px;">
+            <div class="d-flex">
+                <div class="toast-body">@flash</div>
+                <button type="button" class="btn-close me-2 m-auto"
+                        data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var el = document.getElementById('flash-toast');
+                if (el && typeof bootstrap !== 'undefined') {
+                    new bootstrap.Toast(el, { delay: 4000 }).show();
+                }
+            });
+        </script>
+    }
+
+    @RenderSection("Scripts", required: false)
+
+    <partial name="_Toast" />
+    <script src="~/js/toast.js"></script>
+</body>
+</html>

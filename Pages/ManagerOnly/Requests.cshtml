@@ -1,0 +1,54 @@
+@page
+@model Sitiowebb.Pages.ManagerOnly.RequestsModel
+@attribute [Authorize(Roles = "Manager")]
+
+<h2>Pending requests</h2>
+<span id="auto-refresh-hint" class="badge bg-info d-none mb-2">Updating…</span>
+
+@* MENSAJE FLASH (TempData) *@
+@if (TempData["SuccessMessage"] is string msg && !string.IsNullOrWhiteSpace(msg))
+{
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    @msg
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+}
+
+@if (Model.Items == null || Model.Items.Count == 0)
+{
+    <p>No pending requests.</p>
+}
+else
+{
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Requested</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      @foreach (var r in Model.Items)
+      {
+        <tr>
+          <td>@r.UserEmail</td>
+          <td>@r.From.ToString("dd/MM/yyyy")</td>
+          <td>@r.To.ToString("dd/MM/yyyy")</td>
+          <td>@r.CreatedUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+          <td>
+            <a class="btn btn-sm btn-primary"
+               asp-page="/ManagerOnly/Request"
+               asp-route-id="@r.Id">
+              More information
+            </a>
+          </td>
+        </tr>
+      }
+      </tbody>
+    </table>
+  </div>
+}

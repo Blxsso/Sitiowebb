@@ -1,0 +1,107 @@
+@page
+@model Sitiowebb.Pages.UnavailableOptionsModel
+@{
+    ViewData["Title"] = "Unavailable options";
+}
+<!-- ESTILOS DE PRUEBA SOLO PARA ESTA PÁGINA -->
+<style id="tile-test">
+  .tiles{ display:flex; flex-wrap:wrap; gap:24px; }
+
+  .tile{
+    position:relative;
+    display:inline-flex;
+    align-items:center;
+    height:72px;
+    padding:0 16px 0 82px;         /* espacio para el cuadrito + ícono */
+    border-radius:12px;
+    box-shadow:0 12px 22px rgba(0,0,0,.06);
+    text-decoration:none !important;
+    color:inherit !important;
+  }
+
+  .tile::before{
+    content:"";
+    position:absolute;
+    left:16px; top:50%;
+    width:58px; height:42px;
+    transform:translateY(-50%);
+    border-radius:9px;
+    background:#fff; opacity:.18;
+  }
+
+  .tile-icon{
+    position:absolute;
+    left:16px; top:50%;
+    width:58px; height:42px;
+    transform:translateY(-50%);
+    display:flex; align-items:center; justify-content:center;
+    pointer-events:none;
+  }
+  .tile-icon img{ max-width:70%; max-height:70%; object-fit:contain; display:block; }
+
+  .tile-label{ font-weight:600; letter-spacing:.2px; transition:transform .18s ease; }
+  .tile:hover .tile-label{ transform:translateY(-1px); }
+
+  /* Colores */
+  .tile--yellow{ background:#f3cf6a; }
+  .tile--orange{ background:#f2a355; }
+  .tile--lightblue{ background:#8fbaf7; }
+  .tile--blue{ background:#3f5bf2; color:#fff; }
+  .tile--gray{ background:#d9dde2; }
+  .tile--purple{ background:#9e7df6; color:#fff; }
+</style>
+
+<div class="unavail-wrap container py-4">
+  <h1 class="display-4 home-title">What kind of unavailability?</h1>
+  <p class="home-sub">Choose one option below.</p>
+
+  <div class="tiles">
+    <!-- Vacations (amarillo) -->
+    <a class="tile tile--yellow" asp-page="/Unavailable" asp-route-type="vacations" title="Vacations">
+      <span class="tile-icon">
+        <img src="~/Images/haze.png" alt="Vacations" />
+      </span>
+      <span class="tile-label">Vacations</span>
+    </a>
+
+    <!-- Holidays (naranja) -->
+    <a class="tile tile--orange" asp-page="/Unavailable" asp-route-type="holidays" title="Holidays">
+      <span class="tile-icon">
+        <img src="~/Images/holiday.png" alt="Holidays" />
+      </span>
+      <span class="tile-label">Holidays</span>
+    </a>
+
+    <!-- Meeting (azul claro) -->
+    <a class="tile tile--lightblue" asp-page="/Unavailable" asp-route-type="meeting" title="Meeting">
+      <span class="tile-icon">
+        <img src="~/Images/headset.png" alt="Meeting" />
+      </span>
+      <span class="tile-label">Meeting</span>
+    </a>
+
+    <!-- Job trip (azul fuerte) -->
+    <a class="tile tile--blue" asp-page="/Unavailable" asp-route-type="jobtrip" title="Job trip">
+      <span class="tile-icon">
+        <img src="~/Images/plane.png" alt="Job trip" />
+      </span>
+      <span class="tile-label">Job trip</span>
+    </a>
+
+    <!-- Half day off (gris) -->
+    <a class="tile tile--gray" asp-page="/Unavailable" asp-route-type="halfday" title="Half day off">
+      <span class="tile-icon">
+        <img src="~/Images/user-round-minus.png" alt="Half day off" />
+      </span>
+      <span class="tile-label">Half day off</span>
+    </a>
+
+    <!-- Ill (morado) -->
+    <a class="tile tile--purple" asp-page="/Unavailable" asp-route-type="ill" title="Ill">
+      <span class="tile-icon">
+        <img src="~/Images/bed.png" alt="Ill" />
+      </span>
+      <span class="tile-label">Ill</span>
+    </a>
+  </div>
+</div>

@@ -1,0 +1,23 @@
+@page "{id:int}"
+@model Sitiowebb.Pages.ManagerOnly.Requests.DetailsModel
+@attribute [Authorize(Roles = "Manager")]
+
+<h5>Vacation request</h5>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <p class="card-text">
+      <b>User:</b> @Model.Item.UserEmail<br/>
+      <b>From:</b> @Model.Item.From.ToString("dd/MM/yyyy")<br/>
+      <b>To:</b> @Model.Item.To.ToString("dd/MM/yyyy")<br/>
+      <b>Status:</b> @Model.Item.Status<br/>
+      @* Si tienes CreatedUtc, muéstralo; si no, borra esta línea *@
+      @* <b>Requested at:</b> @Model.Item.CreatedUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm") *@
+    </p>
+
+    <form method="post" class="d-flex gap-2">
+      <button type="submit" class="btn btn-success" asp-page-handler="Approve" asp-route-id="@Model.Item.Id">Approve</button>
+      <button type="submit" class="btn btn-danger" asp-page-handler="Reject" asp-route-id="@Model.Item.Id">Reject</button>
+    </form>
+  </div>
+</div>

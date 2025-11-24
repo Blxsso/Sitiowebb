@@ -1,0 +1,16 @@
+﻿@page
+@attribute [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+@model IndexModel
+@{
+    ViewData["Title"] = "Welcome";
+    Layout = "/Pages/Shared/_Layout.cshtml";
+}
+
+<section class="container py-5">
+    <h1 class="home-title">Welcome to Job Calendar</h1>
+    <h2 class="home-sub">How to use it?</h2>
+    <p class="home-text">
+    Here you can quickly report your availability, request time off, and check vacation status in a simple, centralized way.
+    </p>
+
+</section>

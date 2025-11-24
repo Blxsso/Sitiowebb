@@ -1,0 +1,78 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Sitiowebb
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<ul class="d-flex align-items-center list-unstyled mb-0 gap-2">
+
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li class="text-light d-none d-sm-block me-1">Hello @User.Identity?.Name</li>
+
+        @* Botón hamburguesa SOLO para Managers *@
+        @if (User.IsInRole("Manager"))
+        {
+            <li class="position-relative">
+                <button class="btn-hamburger" type="button"
+                        data-bs-toggle="offcanvas" data-bs-target="#managerMenu"
+                        aria-controls="managerMenu" aria-label="Open manager menu">
+                    <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                    <span id="notifDot" class="manager-dot"></span>
+                </button>
+            </li>
+        }
+
+        <li>
+            <form class="m-0" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="~/" method="post">
+                <button type="submit" class="btn btn-outline-light">Logout</button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li><a class="btn btn-outline-light" asp-area="Identity" asp-page="/Account/Login">Login</a></li>
+        <li><a class="btn btn-outline-light" asp-area="Identity" asp-page="/Account/Register">Register</a></li>
+    }
+</ul>
+
+<!-- ===== Notificaciones (SignalR + contador) SOLO para Managers logueados ===== -->
+@if (SignInManager.IsSignedIn(User) && User.IsInRole("Manager"))
+{
+<script>
+(() => {
+  const dot   = document.getElementById('notifDot');
+  const badge = document.getElementById('pendingBadge');
+
+  const setDot = (has) => { if(dot) dot.classList.toggle('show', !!has); }
+  const setBadge = (n) => {
+    if(!badge) return;
+    if(n > 0){ badge.style.display='inline-block'; badge.textContent = n; }
+    else { badge.style.display='none'; badge.textContent='0'; }
+    setDot(n > 0);
+  }
+
+  // 1) Al entrar, sincroniza contador y muestra (si lo quieres) un “último”
+  fetch('/api/pending-count', { credentials:'same-origin' })
+    .then(r => r.ok ? r.json() : 0)
+    .then(n => setBadge(n))
+    .catch(()=>{});
+
+  // 2) Tiempo real con SignalR
+  if (window.signalR) {
+    const conn = new signalR.HubConnectionBuilder()
+      .withUrl('/hubs/notifications')
+      .withAutomaticReconnect()
+      .build();
+
+    const onNew = () => {
+      // incrementa badge
+      const current = parseInt(badge?.textContent || '0', 10);
+      setBadge(current + 1);
+    };
+
+    conn.on('newVacationRequest', onNew);
+    conn.start().catch(console.error);
+  }
+})();
+</script>
+}

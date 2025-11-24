@@ -1,0 +1,47 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using Sitiowebb.Data;
+
+namespace Sitiowebb.Pages.ManagerOnly
+{
+    [Authorize(Roles = "Manager")]
+    public class IndexModel : PageModel
+    {
+        private readonly ApplicationDbContext _db;
+
+        public IndexModel(ApplicationDbContext db)
+        {
+            _db = db;
+        }
+
+        // Propiedades que usa tu vista Index.cshtml
+        public int PendingCount { get; private set; }
+        public int ActiveEmployes { get; private set; }
+        public int AbsencesThisMonth { get; private set; }
+
+        public async Task OnGetAsync()
+        {
+            // Total de solicitudes pendientes de aprobación
+            PendingCount = await _db.VacationRequests
+                .CountAsync(v => v.Status == Models.RequestStatus.Pending);
+
+            // Empleados activos registrados
+            ActiveEmployes = await _db.Users.CountAsync(u => u.Email != null);
+
+            // Ausencias (vacaciones o indisponibilidades) del mes actual
+            var now = DateTime.UtcNow;
+            var firstDay = new DateTime(now.Year, now.Month, 1);
+            var lastDay = firstDay.AddMonths(1).AddDays(-1);
+
+            var vacCount = await _db.VacationRequests
+                .CountAsync(v => v.Status == Models.RequestStatus.Approved &&
+                                 v.From <= lastDay && v.To >= firstDay);
+
+            var unavCount = await _db.Unavailabilities
+                .CountAsync(u => u.StartDate <= lastDay && u.EndDate >= firstDay);
+
+            AbsencesThisMonth = vacCount + unavCount;
+        }
+    }
+}
