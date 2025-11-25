@@ -68,23 +68,24 @@ namespace Sitiowebb.Pages.ManagerOnly
                     _                                   => "vacation"
                 };
 
-                var unav = new Unavailability
-                {
-                    UserEmail     = req.UserEmail,
-                    Kind          = kind,
-                    StartDate     = req.From,
-                    EndDate       = req.To,
-                    IsHalfDay     = false,          // si luego quieres medias jornadas, aquí se ajusta
-                    HalfSegment   = null,
-                    Justification = string.IsNullOrWhiteSpace(req.ManagerComment)
+            var unav = new Unavailability
+            {
+                UserEmail   = req.UserEmail,
+                Kind        = kind,
+                StartDate   = req.From.UtcDateTime,
+                EndDate     = req.To.UtcDateTime,
+                IsHalfDay   = false,          // si luego quieres medias jornadas, se ajusta aquí
+                HalfSegment = null,
+                Justification = string.IsNullOrWhiteSpace(req.ManagerComment)
                     ? (req.UserComment ?? string.Empty)
-                    : req.ManagerComment
-                };
+                    : req.ManagerComment,
+                CreatedUtc = DateTime.UtcNow
+            };
 
-                _db.Unavailabilities.Add(unav);
-            }
-
+            _db.Unavailabilities.Add(unav);
             await _db.SaveChangesAsync();
+                return RedirectToPage("./Requests");   // o "Requests", según como la tengas
+}
 
             // 3) Notificación en tiempo real al usuario
             if (!string.IsNullOrWhiteSpace(req.UserEmail))

@@ -5,6 +5,7 @@ namespace Sitiowebb.Models
 {
     public class VacationRequest
     {
+        // Clave primaria de la tabla
         public int Id { get; set; }
 
         [Required]
@@ -14,12 +15,13 @@ namespace Sitiowebb.Models
         [Required]
         public string Kind { get; set; } = string.Empty;
 
-        public DateTime From { get; set; }
-        public DateTime To { get; set; }
+        // Fechas: ahora con zona horaria (DateTimeOffset) para PostgreSQL
+        public DateTimeOffset From { get; set; }
+        public DateTimeOffset To { get; set; }
 
-        public DateTime CreatedUtc { get; set; }
+        public DateTimeOffset CreatedUtc { get; set; }
 
-        // 🔹 Comentario del usuario (justificación)
+        // Comentario del usuario (justificación)
         public string? UserComment { get; set; }
 
         // Estado (Pending / Approved / Denied)
@@ -27,6 +29,6 @@ namespace Sitiowebb.Models
 
         // Campos del manager
         public string ManagerComment { get; set; } = string.Empty;
-        public DateTime? DecidedUtc { get; set; }
+        public DateTimeOffset? DecidedUtc { get; set; }
     }
 }
