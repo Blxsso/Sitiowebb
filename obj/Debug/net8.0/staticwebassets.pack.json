@@ -41,6 +41,10 @@
       "PackagePath": "staticwebassets\\Images\\user-round-minus.png"
     },
     {
+      "Id": "C:\\Users\\Lenovo\\Desktop\\Prueba\\Sitiowebb\\wwwroot\\appsettings.Production.json",
+      "PackagePath": "staticwebassets\\appsettings.Production.json"
+    },
+    {
       "Id": "C:\\Users\\Lenovo\\Desktop\\Prueba\\Sitiowebb\\wwwroot\\css\\site.css",
       "PackagePath": "staticwebassets\\css\\site.css"
     },

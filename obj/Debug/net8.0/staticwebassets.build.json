@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "SsSNquf+ewjHO63eeSBeDV21BWemkvhq3y3BlhDBI2k=",
+  "Hash": "36dF26uO20UmrIrvElOSex2QWvnwDO4tsUt7x0cWHnk=",
   "Source": "Sitiowebb",
   "BasePath": "_content/Sitiowebb",
   "Mode": "Default",
@@ -1193,6 +1193,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "C:\\Users\\Lenovo\\Desktop\\Prueba\\Sitiowebb\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\Sitiowebb.bundle.scp.css"
+    },
+    {
+      "Identity": "C:\\Users\\Lenovo\\Desktop\\Prueba\\Sitiowebb\\wwwroot\\appsettings.Production.json",
+      "SourceId": "Sitiowebb",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\Lenovo\\Desktop\\Prueba\\Sitiowebb\\wwwroot\\",
+      "BasePath": "_content/Sitiowebb",
+      "RelativePath": "appsettings.Production.json",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\appsettings.Production.json"
     },
     {
       "Identity": "C:\\Users\\Lenovo\\Desktop\\Prueba\\Sitiowebb\\wwwroot\\css\\site.css",
