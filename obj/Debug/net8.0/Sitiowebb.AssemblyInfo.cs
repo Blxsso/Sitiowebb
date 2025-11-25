@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Sitiowebb")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2583669bad2fc293a9709bf6f47b665cbb0ff83f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1e4d84d2a5a3f43ec712f857d2ee357bb47b0bf5")]
 [assembly: System.Reflection.AssemblyProductAttribute("Sitiowebb")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Sitiowebb")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
