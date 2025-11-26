@@ -1,4 +1,3 @@
-// Ruta: Services/EmailSettings.cs
 using System;
 
 namespace Sitiowebb.Services
@@ -14,5 +13,8 @@ namespace Sitiowebb.Services
 
         public string From { get; set; } = "";
         public string FromName { get; set; } = "Arkose Labs Notifications";
+
+        // 🔹 NUEVO: para SendGrid
+        public string? ApiKey { get; set; }
     }
 }

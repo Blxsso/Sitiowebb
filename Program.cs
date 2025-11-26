@@ -84,8 +84,18 @@ builder.Services.AddRazorPages(options =>
 });
 
 // ---------------- Email (SMTP) ----------------
-builder.Services.Configure<EmailSettings>(
-    builder.Configuration.GetSection("Email"));
+builder.Services.Configure<EmailSettings>(options =>
+{
+    // Lee los valores de la sección EmailSettings del appsettings
+    builder.Configuration.GetSection("EmailSettings").Bind(options);
+
+    // 🔹 Sobrescribir ApiKey con la variable de entorno de Railway
+    var apiKey = Environment.GetEnvironmentVariable("EMAILSETTINGS__APIKEY");
+    if (!string.IsNullOrWhiteSpace(apiKey))
+    {
+        options.ApiKey = apiKey;
+    }
+});
 
 // Email sender (SMTP)
 builder.Services.AddTransient<IAppEmailSender, SmtpAppEmailSender>();
