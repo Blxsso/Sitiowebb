@@ -15,6 +15,6 @@ namespace Sitiowebb.Services
         public string FromName { get; set; } = "Arkose Labs Notifications";
 
         // 🔹 NUEVO: para SendGrid
-        public string? ApiKey { get; set; }
+        public string? ApiKey { get; set; } = null;
     }
 }
