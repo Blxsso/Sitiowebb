@@ -205,6 +205,14 @@ app.MapGet("/dev/make-manager/{email}", async (
     return Results.Ok($"{email} is now Manager.");
 });
 
+// ======= APLICAR MIGRACIONES AUTOMÁTICAMENTE EN PRODUCCIÓN =======
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
+}
+// ================================================================
+
 app.Run();
 
 
