@@ -69,14 +69,16 @@ namespace Sitiowebb.Pages.ManagerOnly
             "training"       => 2,
             "overtime"       => 1,
             "personal"       => 1,
-            "unavailability" => 0,   // por si tienes datos viejos con ese texto
+            "unavailability" => 0,   // por si tienes datos viejoNos con ese texto
             _                => -1   // available u otros
         };
 
         // =================== GET ===================
         public async Task OnGetAsync()
         {
-            var today = DateTime.Today;
+            // Siempre usamos UTC para llevarnos bien con PostgreSQL
+            var today = DateTime.UtcNow.Date;
+            var tomorrow = today.AddDays(1);
             var needle = Norm(q);
 
             // 1) Usuarios
@@ -100,19 +102,20 @@ namespace Sitiowebb.Pages.ManagerOnly
                 .OrderBy(u => u.Name)
                 .ToListAsync();
 
-        // 2) Unavailabilities ACTIVAS HOY (ni pasadas, ni solo futuras)
-        var unavs = await _db.Unavailabilities.AsNoTracking()
-            .Where(u => u.StartDate.Date <= today && u.EndDate.Date >= today)
-            .Select(u => new
-            {
-                EmailNorm   = (u.UserEmail ?? "").Trim().ToLowerInvariant(),
-                u.Kind,
-                u.StartDate,
-                u.EndDate,
-                u.IsHalfDay,
-                u.HalfSegment
-            })
-            .ToListAsync();
+            // 2) Unavailabilities ACTIVAS HOY (usamos rango [today, tomorrow))
+            var unavs = await _db.Unavailabilities.AsNoTracking()
+                .Where(u => u.StartDate < tomorrow && u.EndDate >= today)
+                .Select(u => new
+                {
+                    EmailNorm   = (u.UserEmail ?? "").Trim().ToLowerInvariant(),
+                    u.Kind,
+                    u.StartDate,
+                    u.EndDate,
+                    u.IsHalfDay,
+                    u.HalfSegment
+                })
+                .ToListAsync();
+
             var unavMap = unavs
                 .Where(u => !string.IsNullOrWhiteSpace(u.EmailNorm))
                 .GroupBy(u => u.EmailNorm)

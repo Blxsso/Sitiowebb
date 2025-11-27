@@ -87,19 +87,30 @@ builder.Services.AddRazorPages(options =>
 // -------- Email (API MailerSend) --------------
 builder.Services.Configure<EmailSettings>(options =>
 {
-    // Lee la sección "EmailSettings" de appsettings.*
     builder.Configuration.GetSection("EmailSettings").Bind(options);
 
-    // Sobrescribe ApiKey con la variable de entorno de Railway
-    var apiKey = Environment.GetEnvironmentVariable("EMAILSETTINGS__APIKEY");
-    if (!string.IsNullOrWhiteSpace(apiKey))
-    {
-        options.ApiKey = apiKey;
-    }
+    // Overrides desde Railway
+    string? s(string key) => Environment.GetEnvironmentVariable(key);
+
+    if (!string.IsNullOrWhiteSpace(s("EMAILSETTINGS__HOST")))
+        options.Host = s("EMAILSETTINGS__HOST")!;
+    if (int.TryParse(s("EMAILSETTINGS__PORT"), out var port))
+        options.Port = port;
+    if (bool.TryParse(s("EMAILSETTINGS__ENABLESSL"), out var ssl))
+        options.EnableSsl = ssl;
+
+    if (!string.IsNullOrWhiteSpace(s("EMAILSETTINGS__USERNAME")))
+        options.UserName = s("EMAILSETTINGS__USERNAME")!;
+    if (!string.IsNullOrWhiteSpace(s("EMAILSETTINGS__PASSWORD")))
+        options.Password = s("EMAILSETTINGS__PASSWORD")!;
+
+    if (!string.IsNullOrWhiteSpace(s("EMAILSETTINGS__FROM")))
+        options.From = s("EMAILSETTINGS__FROM")!;
+    if (!string.IsNullOrWhiteSpace(s("EMAILSETTINGS__FROMNAME")))
+        options.FromName = s("EMAILSETTINGS__FROMNAME")!;
 });
 
 // Registramos el sender que usa HttpClient
-builder.Services.AddHttpClient<SmtpAppEmailSender>();
 builder.Services.AddTransient<IAppEmailSender, SmtpAppEmailSender>();
 
 // ---------------- Autorización por rol ----------------

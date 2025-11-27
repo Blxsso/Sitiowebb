@@ -117,22 +117,28 @@ private IEnumerable<string> ResolveHolidayCountries()
 
         public async Task<IActionResult> OnGetAsync()
         {
-            // Mes/año a mostrar
+            // Mes/año a mostrar (en UTC)
             var now = DateTime.UtcNow;
             MonthNum = Month ?? now.Month;
             YearNum  = Year  ?? now.Year;
 
-            var first = new DateTime(YearNum, MonthNum, 1);
-            var last  = first.AddMonths(1).AddDays(-1);
+            // Fechas de inicio/fin del mes (marcadas como UTC para PostgreSQL)
+            var firstLocal = new DateTime(YearNum, MonthNum, 1);
+            var lastLocal  = firstLocal.AddMonths(1).AddDays(-1);
+
+            var first = DateTime.SpecifyKind(firstLocal, DateTimeKind.Utc);
+            var last  = DateTime.SpecifyKind(lastLocal,  DateTimeKind.Utc);
+
             MonthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(MonthNum);
 
             // Cuadrícula (42 celdas iniciando en lunes)
-            var start = first;
+            var start = firstLocal;
             while (start.DayOfWeek != DayOfWeek.Monday) start = start.AddDays(-1);
             for (int i = 0; i < 42; i++) Days.Add(new DayCell(start.AddDays(i)));
 
             DayCell? Find(DateTime d) => Days.FirstOrDefault(c => c.Date.Date == d.Date);
-                        // ---------- Holidays fijos por país / región ----------
+
+            // ---------- Holidays personalizados (GetHolidays) ----------
             foreach (var h in GetHolidays(YearNum, regionGroup, region))
             {
                 var cell = Find(h.date);
@@ -140,17 +146,17 @@ private IEnumerable<string> ResolveHolidayCountries()
 
                 cell.Events.Add(new CalEvent(
                     h.date,
-                    h.name,                 // el texto que verás en el chip (p.ej. "Nochebuena")
+                    h.name,
                     "holiday",
-                    KindToCss("holiday"),   // clase CSS naranja
-                    IconForKind("holiday")  // puedes reutilizar el icono de vacaciones
+                    KindToCss("holiday"),
+                    IconForKind("holiday")
                 ));
             }
 
             // ---- FERIADOS PÚBLICOS SEGÚN PAÍS/REGIÓN SELECCIONADA ----
-            AddPublicHolidays(first, last);
+            AddPublicHolidays(firstLocal, lastLocal);
 
-            // ---------- Otras indisponibilidades ---------- (sick/meeting/trip/halfday/training…)
+            // ---------- Otras indisponibilidades ----------
             var unavsQ = _db.Unavailabilities.AsNoTracking()
                 .Where(u => u.StartDate <= last && u.EndDate >= first);
 
@@ -170,7 +176,7 @@ private IEnumerable<string> ResolveHolidayCountries()
                 var d1 = u.EndDate.Date;
                 for (var d = d0; d <= d1; d = d.AddDays(1))
                 {
-                    if (d < first || d > last) continue;
+                    if (d < firstLocal || d > lastLocal) continue;
                     var cell = Find(d);
                     if (cell == null) continue;
 
@@ -187,7 +193,8 @@ private IEnumerable<string> ResolveHolidayCountries()
             foreach (var c in Days) c.Events = c.Events.OrderBy(e => e.User).ToList();
 
             // =================== Tabla “Employees availability (today)” ===================
-            var today = DateTime.Today;
+            var today = DateTime.UtcNow.Date;
+            var tomorrow = today.AddDays(1);
 
             var usersQ = _db.Users.AsNoTracking().Where(u => u.Email != null);
             if (!string.IsNullOrWhiteSpace(q))
@@ -205,16 +212,18 @@ private IEnumerable<string> ResolveHolidayCountries()
 
             var vacToday = await _db.VacationRequests.AsNoTracking()
                 .Where(v => v.Status == RequestStatus.Approved &&
-                            v.From.Date <= today && v.To.Date >= today)
+                            v.From < tomorrow && v.To >= today)
                 .Select(v => new { v.UserEmail, v.From, v.To })
                 .ToListAsync();
+
             var vacMap = vacToday.GroupBy(v => v.UserEmail ?? "")
                                 .ToDictionary(g => g.Key, g => g.First());
 
             var unavToday = await _db.Unavailabilities.AsNoTracking()
-                .Where(u => u.StartDate.Date <= today && u.EndDate.Date >= today)
+                .Where(u => u.StartDate < tomorrow && u.EndDate >= today)
                 .Select(u => new { u.UserEmail, u.Kind, u.IsHalfDay, u.HalfSegment, u.StartDate, u.EndDate })
                 .ToListAsync();
+
             var unavMap = unavToday.GroupBy(u => u.UserEmail ?? "")
                                 .ToDictionary(g => g.Key, g => g.ToList());
 
@@ -231,7 +240,7 @@ private IEnumerable<string> ResolveHolidayCountries()
                 DateTime? to       = null;
                 int bestPriority   = StatusPriority(status);
 
-                // 1) Si tiene vacaciones aprobadas hoy
+                // 1) Vacaciones aprobadas hoy
                 if (vacMap.TryGetValue(email, out var vrec))
                 {
                     var s = "vacation";
@@ -241,7 +250,7 @@ private IEnumerable<string> ResolveHolidayCountries()
                     to            = vrec.To.Date;
                 }
 
-                // 2) Otras indisponibilidades (sick, meeting, trip, halfday, etc.)
+                // 2) Otras indisponibilidades
                 if (unavMap.TryGetValue(email, out var list))
                 {
                     foreach (var r in list)
@@ -270,7 +279,6 @@ private IEnumerable<string> ResolveHolidayCountries()
 
             return Page();
         }
-
         // ===================== Helpers visuales =====================
         private static string KindToCss(string? kind)
         {

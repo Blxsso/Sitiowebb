@@ -1,7 +1,5 @@
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
+using System.Net;
+using System.Net.Mail;
 using Microsoft.Extensions.Options;
 
 namespace Sitiowebb.Services
@@ -9,66 +7,53 @@ namespace Sitiowebb.Services
     public class SmtpAppEmailSender : IAppEmailSender
     {
         private readonly EmailSettings _settings;
-        private readonly HttpClient _httpClient;
 
-        public SmtpAppEmailSender(IOptions<EmailSettings> options, HttpClient httpClient)
+        public SmtpAppEmailSender(IOptions<EmailSettings> options)
         {
             _settings = options.Value;
-            _httpClient = httpClient;
         }
 
         public async Task SendAsync(string toEmail, string subject, string htmlMessage)
         {
-            // Si falta algo importante, no intentamos enviar
-            if (string.IsNullOrWhiteSpace(_settings.ApiKey) ||
+            // Si hay algo crítico que falta, no intentamos enviar
+            if (string.IsNullOrWhiteSpace(_settings.Host) ||
+                string.IsNullOrWhiteSpace(_settings.UserName) ||
+                string.IsNullOrWhiteSpace(_settings.Password) ||
                 string.IsNullOrWhiteSpace(_settings.From) ||
                 string.IsNullOrWhiteSpace(toEmail))
             {
-                return;
+                return; // No rompemos la web
             }
 
-            // Usamos tu template bonito
-            var niceHtml = EmailTemplate.Build(
-                title: subject,
-                introText: "Hello,",
-                mainText: htmlMessage,
-                buttonText: "Open Arkose dashboard",
-                buttonUrl: "https://sitiowebb-production.up.railway.app/ManagerOnly/Requests",
-                footerText: "You received this email because your user is registered in the Arkose Labs availability tool."
-            );
-
-            var body = new
+            using var client = new SmtpClient(_settings.Host, _settings.Port)
             {
-                from = new { email = _settings.From, name = _settings.FromName },
-                to = new[] { new { email = toEmail } },
-                subject = subject,
-                html = niceHtml
+                EnableSsl = _settings.EnableSsl,
             };
 
-            var json = JsonSerializer.Serialize(body);
+            // Evitamos el lío del SecureString usando las propiedades
+            var creds = new NetworkCredential();
+            creds.UserName = _settings.UserName;
+            creds.Password = _settings.Password;
+            client.Credentials = creds;
 
-            using var request = new HttpRequestMessage(
-                HttpMethod.Post,
-                "https://api.mailersend.com/v1/email"
-            );
+            var msg = new MailMessage
+            {
+                From = new MailAddress(_settings.From, _settings.FromName),
+                Subject = subject,
+                Body = htmlMessage,
+                IsBodyHtml = true
+            };
 
-            request.Headers.Authorization =
-                new AuthenticationHeaderValue("Bearer", _settings.ApiKey);
-
-            request.Content = new StringContent(
-                json,
-                Encoding.UTF8,
-                "application/json"
-            );
+            msg.To.Add(toEmail);
 
             try
             {
-                var response = await _httpClient.SendAsync(request);
-                // Si quieres, puedes revisar response.IsSuccessStatusCode
+                await client.SendMailAsync(msg);
             }
             catch
             {
-                // Importantísimo: si el correo falla, NO tiramos la web
+                // Aquí podrías hacer logging, pero NO relanzamos la excepción.
+                // Así, si falla el correo, la web sigue funcionando.
             }
         }
     }
