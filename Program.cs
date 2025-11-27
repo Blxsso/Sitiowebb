@@ -17,9 +17,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // --- DB (PostgreSQL) ---
 var connectionString =
-    builder.Environment.IsDevelopment()
-        ? builder.Configuration.GetConnectionString("DefaultConnection")   // local
-        : Environment.GetEnvironmentVariable("DATABASE_URL");              // Railway
+    builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? Environment.GetEnvironmentVariable("DATABASE_URL")
+    ?? throw new InvalidOperationException("No se encontró la cadena de conexión");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
