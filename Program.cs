@@ -208,8 +208,20 @@ app.MapGet("/dev/make-manager/{email}", async (
 // ======= APLICAR MIGRACIONES AUTOMÁTICAMENTE EN PRODUCCIÓN =======
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();
+    var logger = scope.ServiceProvider
+                      .GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        db.Database.Migrate();
+        logger.LogInformation("EF migrations applied on startup.");
+    }
+    catch (Exception ex)
+    {
+        // IMPORTANTE: no tiramos la app, sólo logueamos
+        logger.LogError(ex, "Error applying EF migrations on startup.");
+    }
 }
 // ================================================================
 
