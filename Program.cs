@@ -85,49 +85,28 @@ builder.Services.AddRazorPages(options =>
 });
 
 // -------- Email (SMTP / MailerSend) -------------
-builder.Services.Configure<EmailSettings>(options =>
+builder.Services.Configure<Sitiowebb.Services.EmailSettings>(options =>
 {
-    // 1) Carga base desde appsettings.*.json
+    // Lee la sección "EmailSettings" del appsettings.* (por si tienes From, FromName ahí)
     builder.Configuration.GetSection("EmailSettings").Bind(options);
 
-    // 2) Sobrescribe con variables de entorno de Railway (si existen)
-    void Override(string envName, Action<string> assign)
-    {
-        var value = Environment.GetEnvironmentVariable(envName);
-        if (!string.IsNullOrWhiteSpace(value))
-        {
-            assign(value);
-        }
-    }
+    // Sobrescribe con variables de entorno de Railway (opcional pero útil en producción)
+    var from = Environment.GetEnvironmentVariable("EMAILSETTINGS__FROM");
+    if (!string.IsNullOrWhiteSpace(from))
+        options.From = from;
 
-    Override("EMAILSETTINGS__FROM",      v => options.From = v);
-    Override("EMAILSETTINGS__FROMNAME",  v => options.FromName = v);
-    Override("EMAILSETTINGS__HOST",      v => options.Host = v);
-    Override("EMAILSETTINGS__USERNAME",  v => options.UserName = v);
-    Override("EMAILSETTINGS__PASSWORD",  v => options.Password = v);
+    var fromName = Environment.GetEnvironmentVariable("EMAILSETTINGS__FROMNAME");
+    if (!string.IsNullOrWhiteSpace(fromName))
+        options.FromName = fromName;
 
-    var portStr = Environment.GetEnvironmentVariable("EMAILSETTINGS__PORT");
-    if (int.TryParse(portStr, out var port))
-    {
-        options.Port = port;
-    }
-
-    var sslStr = Environment.GetEnvironmentVariable("EMAILSETTINGS__ENABLESSL");
-    if (bool.TryParse(sslStr, out var ssl))
-    {
-        options.EnableSsl = ssl;
-    }
-
-    // Si algún día volvemos a usar ApiKey (por API)
     var apiKey = Environment.GetEnvironmentVariable("EMAILSETTINGS__APIKEY");
     if (!string.IsNullOrWhiteSpace(apiKey))
-    {
         options.ApiKey = apiKey;
-    }
 });
 
-// Registramos el sender que usa SmtpClient
-builder.Services.AddTransient<IAppEmailSender, SmtpAppEmailSender>();
+// Registramos el sender que usa HttpClient (MailerSend API)
+builder.Services.AddHttpClient<Sitiowebb.Services.SmtpAppEmailSender>();
+builder.Services.AddTransient<Sitiowebb.Services.IAppEmailSender, Sitiowebb.Services.SmtpAppEmailSender>();
 
 // ---------------- Autorización por rol ----------------
 builder.Services.AddAuthorization(o =>
