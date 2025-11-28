@@ -154,22 +154,22 @@ app.MapGet("/", ctx =>
 });
 
 // -------- Seeding de roles/usuarios manager (opcional) --------
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    try
-    {
-        var db     = services.GetRequiredService<ApplicationDbContext>();
-        await db.Database.MigrateAsync();
+//using (var scope = app.Services.CreateScope())
+//{
+  //  var services = scope.ServiceProvider;
+    //try
+    //{
+      //  var db     = services.GetRequiredService<ApplicationDbContext>();
+        //await db.Database.MigrateAsync();
 
-        var seeder = services.GetRequiredService<IdentitySeeder>(); // si tienes este seeder
-        await seeder.SeedAsync();                                   // crea roles y managers si faltan
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Seeding error: {ex.Message}");
-    }
-}
+        //var seeder = services.GetRequiredService<IdentitySeeder>(); // si tienes este seeder
+        //await seeder.SeedAsync();                                   // crea roles y managers si faltan
+    //}
+    //catch (Exception ex)
+    //{
+      //  Console.WriteLine($"Seeding error: {ex.Message}");
+    //}
+//}
 
 // --------- Helper DEV: ascender un usuario a Manager ---------
 app.MapGet("/dev/make-manager/{email}", async (
