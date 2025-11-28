@@ -1,0 +1,12 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=dpg-d4kr6tbuibrs73fm2mrg-a.oregon-postgres.render.com;Port=5432;Username=sara;Password=z9UCv5Up8g0zLOpLFP7Ja0h7g5lBjzVf;Database=sitioweb_db;SSL Mode=Require;Trust Server Certificate=true;"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*"
+}

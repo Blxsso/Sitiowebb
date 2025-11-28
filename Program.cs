@@ -16,11 +16,12 @@ using Npgsql.EntityFrameworkCore.PostgreSQL;
 // -------------------- BUILDER --------------------
 var builder = WebApplication.CreateBuilder(args);
 
-// -------------------- DB (SQLite) ----------------
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+// Registra el DbContext usando Npgsql
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 
 // ---------------- Identity + Roles ----------------
