@@ -16,12 +16,21 @@ using Npgsql.EntityFrameworkCore.PostgreSQL;
 // -------------------- BUILDER --------------------
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+// 💥 PRUEBA: meter la cadena de conexión directamente aquí.
+// Usa TAL CUAL la URL que te dio Render, pero en formato Npgsql:
 
-// Registra el DbContext usando Npgsql
+var connectionString =
+    "Host=dpg-d4kr6tbuibrs73fm2mrg-a.oregon-postgres.render.com;" +
+    "Port=5432;" +
+    "Username=sara;" +
+    "Password=z9UCv5Up8g0zLOpLFP7Ja0h7g5lBjzVf;" +
+    "Database=sitioweb_db;" +
+    "SSL Mode=Require;" +
+    "Trust Server Certificate=true;";
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
+
 
 
 // ---------------- Identity + Roles ----------------
