@@ -30,6 +30,8 @@ var connectionString =
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
+    Console.WriteLine("### INICIO Sitiowebb2 - usando PostgreSQL en Render");
+Console.WriteLine("### ConnectionString: " + connectionString);
 
 
 
