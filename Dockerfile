@@ -1,24 +1,29 @@
-# Imagen base del SDK para compilar el proyecto
+# Etapa 1: construir el proyecto
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /app
+WORKDIR /src
 
-# Copiar csproj y restaurar dependencias
-COPY *.sln .
-COPY Sitiowebb/*.csproj ./Sitiowebb/
-RUN dotnet restore
-
-# Copiar el resto del código y compilar
+# Copiamos TODO el repo al contenedor
 COPY . .
-WORKDIR /app/Sitiowebb
-RUN dotnet publish -c Release -o /out
 
-# Imagen final para ejecutar la aplicación
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+# Entramos en la carpeta del proyecto (la que contiene Sitioweb.csproj)
+WORKDIR /src/Sitiowebb
+
+# Restauramos dependencias
+RUN dotnet restore "Sitioweb.csproj"
+
+# Publicamos en modo Release
+RUN dotnet publish "Sitioweb.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+# Etapa 2: imagen final solo con el runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
-COPY --from=build /out .
 
-# Puerto en el que correrá la app en Render
+# Copiamos lo publicado desde la etapa build
+COPY --from=build /app/publish .
+
+# Render usará este puerto interno
 ENV ASPNETCORE_URLS=http://+:10000
 EXPOSE 10000
 
-ENTRYPOINT ["dotnet", "Sitiowebb.dll"]
+# Ejecutar tu app
+ENTRYPOINT ["dotnet", "Sitioweb.dll"]
