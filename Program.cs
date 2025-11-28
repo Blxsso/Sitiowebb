@@ -10,13 +10,15 @@ using Sitiowebb.Data;        // ApplicationDbContext
 using Sitiowebb;             // ApplicationUser (si lo tienes en este namespace)
 using Sitiowebb.Data.Hubs;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
  
 // -------------------- BUILDER --------------------
 var builder = WebApplication.CreateBuilder(args);
 
 // -------------------- DB (SQLite) ----------------
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 

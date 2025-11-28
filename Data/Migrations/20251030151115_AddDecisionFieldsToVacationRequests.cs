@@ -33,13 +33,11 @@ namespace Sitiowebb.Data.Migrations
                 table: "VacationRequests",
                 newName: "CreatedUtc");
 
-            migrationBuilder.AlterColumn<int>(
-                name: "Status",
-                table: "VacationRequests",
-                type: "INTEGER",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "TEXT");
+            migrationBuilder.Sql(
+                "ALTER TABLE \"VacationRequests\" " +
+                "ALTER COLUMN \"Status\" TYPE INTEGER USING \"Status\"::integer;"
+            );
+
 
             migrationBuilder.AddColumn<string>(
                 name: "DecidedByManagerId",
